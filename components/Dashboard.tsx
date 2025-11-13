@@ -4,7 +4,7 @@ import { BatteryData, Cell, ScanHistoryItem } from '../types';
 import { mockBatteryService } from '../services/mockBatteryService';
 import { historyService } from '../services/historyService';
 import StatCard, { BoltIcon, ThermometerIcon, BatteryIcon, PowerIcon, HeartIcon, RefreshIcon } from './StatCard';
-import CellVoltageChart from './CellVoltageChart';
+const CellVoltageChart = React.lazy(() => import('./CellVoltageChart'));
 import DiagnosticControls from './DiagnosticControls';
 import VehicleSelector from './VehicleSelector';
 import BatteryHealthSummary from './BatteryHealthSummary';
@@ -14,7 +14,7 @@ import SelectedCellDetails from './SelectedCellDetails';
 import DeepDiagnosticModal from './DeepDiagnosticModal';
 import { getHealthVerdictText } from '../utils/verdict';
 import { kmeans1d } from '../utils/clustering';
-import VoltageClusterVisualizer from './VoltageClusterVisualizer';
+const VoltageClusterVisualizer = React.lazy(() => import('./VoltageClusterVisualizer'));
 
 
 const Z_SCORE_THRESHOLD = 2.0; // Kept for informational calculation
@@ -245,20 +245,24 @@ const Dashboard: React.FC = () => {
             <div className="lg:col-span-2 bg-gray-900 p-4 sm:p-6 rounded-lg shadow-lg">
                 <h2 className="text-xl font-bold mb-4 text-gray-200">{viewingHistoryItem ? 'Historical Cell Analysis' : 'Real-Time Cell Analysis'}</h2>
                 <div className="h-80">
-                <CellVoltageChart 
-                    cells={activeData.diagnosticData.processedCells} 
-                    voltageThreshold={Z_SCORE_THRESHOLD}
-                    resistanceThreshold={RESISTANCE_THRESHOLD}
-                    onCellClick={handleCellSelect}
-                    selectedCellId={selectedCellId}
-                />
+                  <React.Suspense fallback={<div className="flex items-center justify-center h-full">Loading chart…</div>}>
+                    <CellVoltageChart 
+                      cells={activeData.diagnosticData.processedCells} 
+                      voltageThreshold={Z_SCORE_THRESHOLD}
+                      resistanceThreshold={RESISTANCE_THRESHOLD}
+                      onCellClick={handleCellSelect}
+                      selectedCellId={selectedCellId}
+                    />
+                  </React.Suspense>
                 </div>
                  <div className="mt-6">
                     <h3 className="text-lg font-bold mb-3 text-gray-300">Voltage Cluster Analysis</h3>
-                     <VoltageClusterVisualizer 
+                    <React.Suspense fallback={<div className="py-6">Loading visualization…</div>}>
+                      <VoltageClusterVisualizer 
                         cells={activeData.diagnosticData.processedCells} 
                         centroids={activeData.diagnosticData.voltageClusters.centroids}
-                    />
+                      />
+                    </React.Suspense>
                 </div>
             </div>
 

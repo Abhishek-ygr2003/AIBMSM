@@ -18,6 +18,29 @@ export default defineConfig(({ mode }) => {
         alias: {
           '@': path.resolve(__dirname, '.'),
         }
+      },
+      build: {
+        outDir: 'dist',
+        // Split vendor and large libraries into separate chunks to reduce initial bundle size
+        rollupOptions: {
+          output: {
+            manualChunks(id) {
+              if (!id) return null;
+              if (id.includes('node_modules')) {
+                // group React and React DOM together
+                if (id.includes('react') || id.includes('react-dom')) return 'vendor-react';
+                // recharts is heavy (d3-based) - put it in its own chunk
+                if (id.includes('recharts')) return 'vendor-recharts';
+                // google genai client in its own chunk
+                if (id.includes('@google/genai')) return 'vendor-genai';
+                // all other node_modules into vendor
+                return 'vendor';
+              }
+            }
+          }
+        },
+        // Lower warning threshold so we get actionable warnings earlier (in KB)
+        chunkSizeWarningLimit: 600
       }
     };
 });
