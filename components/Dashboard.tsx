@@ -92,7 +92,9 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     if (isScanning) {
-      mockBatteryService.startStreaming(setBatteryData);
+      // By default in demo mode we provide a stable snapshot so the chart doesn't cycle through
+      // multiple demo states. To enable live streaming set cycle: true.
+      mockBatteryService.startStreaming(setBatteryData, { cycle: false });
     } else {
       mockBatteryService.stopStreaming();
     }

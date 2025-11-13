@@ -63,14 +63,27 @@ const generateBatteryData = (): BatteryData => {
 };
 
 export const mockBatteryService = {
-  startStreaming: (callback: (data: BatteryData) => void) => {
+  startStreaming: (
+    callback: (data: BatteryData) => void,
+    options?: { cycle?: boolean; intervalMs?: number }
+  ) => {
+    const cycle = options?.cycle ?? true;
+    const intervalMs = options?.intervalMs ?? 2000;
+
     if (intervalId) {
       clearInterval(intervalId);
     }
-    callback(generateBatteryData()); // Initial data
-    intervalId = window.setInterval(() => {
-      callback(generateBatteryData());
-    }, 2000);
+
+    const data = generateBatteryData();
+    callback(data); // Initial data
+
+    if (cycle) {
+      intervalId = window.setInterval(() => {
+        callback(generateBatteryData());
+      }, intervalMs);
+    } else {
+      intervalId = null;
+    }
   },
   stopStreaming: () => {
     if (intervalId) {
