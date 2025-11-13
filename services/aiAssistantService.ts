@@ -37,7 +37,7 @@ const getFixSuggestion = async (cell: Cell, vehicleName: string): Promise<string
         },
     });
     
-    return response.text;
+  return response.text ?? '';
   } catch (error) {
     console.error("Gemini API call failed:", error);
     throw new Error("Failed to communicate with the AI assistant. Check your API key and network connection.");

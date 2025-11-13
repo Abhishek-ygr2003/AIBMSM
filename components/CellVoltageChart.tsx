@@ -65,7 +65,10 @@ const CellVoltageChart: React.FC<CellVoltageChartProps> = ({ cells, onCellClick,
           />
           <Tooltip content={<CustomTooltip />} cursor={{fill: 'rgba(0, 242, 234, 0.1)'}} />
           <Legend verticalAlign="top" wrapperStyle={{paddingBottom: '10px'}} />
-          <Bar dataKey="voltage" yAxisId="left" name="Voltage" onClick={(data) => onCellClick(data.id)}>
+          <Bar dataKey="voltage" yAxisId="left" name="Voltage" onClick={(data: any) => {
+            const id = Number(data?.id);
+            if (!Number.isNaN(id)) onCellClick(id);
+          }}>
             {cells.map((entry, index) => (
               <RechartsCell 
                 key={`cell-${index}`} 
