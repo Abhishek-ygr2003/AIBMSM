@@ -13,7 +13,7 @@ const DiagnosticControls: React.FC<DiagnosticControlsProps> = ({ isScanning, onS
       {isScanning ? (
         <button
           onClick={onStop}
-          className="px-6 py-2.5 font-semibold text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-red-500 transition-colors duration-200 ease-in-out flex items-center"
+          className="px-6 py-2.5 font-semibold text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-red-500 transition-colors duration-200 ease-in-out flex items-center"
         >
           <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -24,7 +24,7 @@ const DiagnosticControls: React.FC<DiagnosticControlsProps> = ({ isScanning, onS
       ) : (
         <button
           onClick={onStart}
-          className="px-6 py-2.5 font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-blue-500 transition-colors duration-200 ease-in-out"
+          className="px-6 py-2.5 font-semibold text-white bg-cyan-600 rounded-md hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-cyan-500 transition-colors duration-200 ease-in-out"
         >
           Start Scan
         </button>

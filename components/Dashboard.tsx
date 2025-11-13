@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { BatteryData, Cell, ScanHistoryItem } from '../types';
 import { mockBatteryService } from '../services/mockBatteryService';
@@ -13,12 +14,13 @@ import SelectedCellDetails from './SelectedCellDetails';
 import DeepDiagnosticModal from './DeepDiagnosticModal';
 import { getHealthVerdictText } from '../utils/verdict';
 import { kmeans1d } from '../utils/clustering';
+import VoltageClusterVisualizer from './VoltageClusterVisualizer';
 
 
 const Z_SCORE_THRESHOLD = 2.0; // Kept for informational calculation
 const RESISTANCE_THRESHOLD = 0.010;
 
-const processBatteryData = (data: BatteryData): { processedCells: Cell[], anomalies: Cell[] } => {
+const processBatteryData = (data: BatteryData): { processedCells: Cell[], anomalies: Cell[], voltageClusters: { clusters: number[][], centroids: number[] } } => {
     const voltages = data.cells.map(c => c.voltage);
     const meanVoltage = voltages.reduce((a, b) => a + b) / voltages.length;
     const stdDev = Math.sqrt(voltages.map(x => Math.pow(x - meanVoltage, 2)).reduce((a, b) => a + b) / voltages.length);
@@ -65,7 +67,7 @@ const processBatteryData = (data: BatteryData): { processedCells: Cell[], anomal
     });
 
     const anomalies = processedCells.filter(cell => cell.isAnomaly);
-    return { processedCells, anomalies };
+    return { processedCells, anomalies, voltageClusters: { clusters, centroids } };
 };
 
 
@@ -160,9 +162,10 @@ const Dashboard: React.FC = () => {
   const activeData = useMemo(() => {
     const data = viewingHistoryItem ? viewingHistoryItem.data : batteryData;
     if (!data) return { batteryData: null, diagnosticData: null };
+    const diagnosticData = processBatteryData(data);
     return {
         batteryData: data,
-        diagnosticData: processBatteryData(data)
+        diagnosticData: diagnosticData
     };
   }, [batteryData, viewingHistoryItem]);
   
@@ -212,20 +215,20 @@ const Dashboard: React.FC = () => {
       </div>
 
       {viewingHistoryItem && (
-        <div className="bg-blue-900/50 border border-blue-500 rounded-lg p-4 flex justify-between items-center animate-fade-in">
-          <p className="font-semibold text-blue-300">
+        <div className="bg-cyan-900/30 border border-cyan-600 rounded-lg p-4 flex justify-between items-center animate-fade-in">
+          <p className="font-semibold text-cyan-300">
             Viewing scan for <span className="font-bold">{viewingHistoryItem.vehicle}</span> from {new Date(viewingHistoryItem.timestamp).toLocaleString()}
           </p>
           <button 
             onClick={handleReturnToLive} 
-            className="px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-blue-500 transition-colors"
+            className="px-4 py-2 text-sm font-semibold text-white bg-cyan-600 rounded-md hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-cyan-500 transition-colors"
           >
             Return to Live View
           </button>
         </div>
       )}
 
-      {isScanning && !activeData.batteryData && <p className="text-center text-lg text-slate-400">Connecting to VCI and initiating scan...</p>}
+      {isScanning && !activeData.batteryData && <p className="text-center text-lg text-gray-400">Connecting to VCI and initiating scan...</p>}
       
       {activeData.batteryData && activeData.diagnosticData && (
         <div className="space-y-6 animate-fade-in">
@@ -239,9 +242,9 @@ const Dashboard: React.FC = () => {
           </div>
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 bg-slate-800 p-4 sm:p-6 rounded-lg shadow-lg">
-                <h2 className="text-xl font-bold mb-4 text-slate-200">{viewingHistoryItem ? 'Historical Cell Analysis' : 'Real-Time Cell Analysis'}</h2>
-                <div className="h-96">
+            <div className="lg:col-span-2 bg-gray-900 p-4 sm:p-6 rounded-lg shadow-lg">
+                <h2 className="text-xl font-bold mb-4 text-gray-200">{viewingHistoryItem ? 'Historical Cell Analysis' : 'Real-Time Cell Analysis'}</h2>
+                <div className="h-80">
                 <CellVoltageChart 
                     cells={activeData.diagnosticData.processedCells} 
                     voltageThreshold={Z_SCORE_THRESHOLD}
@@ -249,6 +252,13 @@ const Dashboard: React.FC = () => {
                     onCellClick={handleCellSelect}
                     selectedCellId={selectedCellId}
                 />
+                </div>
+                 <div className="mt-6">
+                    <h3 className="text-lg font-bold mb-3 text-gray-300">Voltage Cluster Analysis</h3>
+                     <VoltageClusterVisualizer 
+                        cells={activeData.diagnosticData.processedCells} 
+                        centroids={activeData.diagnosticData.voltageClusters.centroids}
+                    />
                 </div>
             </div>
 
@@ -283,9 +293,9 @@ const Dashboard: React.FC = () => {
 
       {!isScanning && !activeData.batteryData && (
          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 flex flex-col items-center justify-center h-96 bg-slate-800/50 rounded-lg border-2 border-dashed border-slate-700">
-                <h2 className="text-2xl font-bold text-slate-400">Ready to Scan</h2>
-                <p className="text-slate-500 mt-2">Select a vehicle and click "Start Scan" to begin diagnostics.</p>
+            <div className="lg:col-span-2 flex flex-col items-center justify-center h-[34rem] bg-gray-900/50 rounded-lg border-2 border-dashed border-gray-700">
+                <h2 className="text-2xl font-bold text-gray-400">Ready to Scan</h2>
+                <p className="text-gray-500 mt-2">Select a vehicle and click "Start Scan" to begin diagnostics.</p>
             </div>
             <div className="space-y-6">
                 <ScanHistory

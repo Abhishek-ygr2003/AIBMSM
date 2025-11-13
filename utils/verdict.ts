@@ -1,3 +1,4 @@
+
 export const getHealthVerdictText = (soh: number, anomalies: number): string => {
     if (soh < 80 || anomalies > 5) {
         return 'Service Required';
@@ -10,9 +11,9 @@ export const getHealthVerdictText = (soh: number, anomalies: number): string => 
 
 export const getVerdictClassName = (verdictText: string): string => {
     switch(verdictText) {
-        case 'Service Required': return 'bg-red-500 text-red-50';
-        case 'Degraded': return 'bg-amber-500 text-amber-50';
-        case 'Good': return 'bg-green-500 text-green-50';
-        default: return 'bg-slate-500 text-slate-50';
+        case 'Service Required': return 'bg-red-900 text-red-300';
+        case 'Degraded': return 'bg-amber-900 text-amber-300';
+        case 'Good': return 'bg-green-900 text-green-300';
+        default: return 'bg-gray-700 text-gray-300';
     }
 };

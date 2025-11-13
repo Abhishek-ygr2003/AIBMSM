@@ -17,7 +17,7 @@ const vehicles = [
 const VehicleSelector: React.FC<VehicleSelectorProps> = ({ selectedVehicle, onVehicleChange, disabled }) => {
   return (
     <div>
-      <label htmlFor="vehicle" className="block text-sm font-medium text-slate-400 mb-1">
+      <label htmlFor="vehicle" className="block text-sm font-medium text-gray-400 mb-1">
         Target Vehicle
       </label>
       <select
@@ -25,7 +25,7 @@ const VehicleSelector: React.FC<VehicleSelectorProps> = ({ selectedVehicle, onVe
         value={selectedVehicle}
         onChange={(e) => onVehicleChange(e.target.value)}
         disabled={disabled}
-        className="bg-slate-800 border border-slate-600 text-slate-200 text-md rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full md:w-72 p-2.5 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="bg-gray-900 border border-gray-700 text-gray-200 text-md rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full md:w-72 p-2.5 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {vehicles.map((v) => (
           <option key={v} value={v}>
