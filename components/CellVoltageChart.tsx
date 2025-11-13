@@ -34,9 +34,14 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 const CellVoltageChart: React.FC<CellVoltageChartProps> = ({ cells, onCellClick, selectedCellId }) => {
+  if (!cells || cells.length === 0) {
+    return <div className="h-64 flex items-center justify-center text-gray-500">No cell data available</div>;
+  }
+
   return (
     <div role="figure" aria-label="Chart of cell voltages and internal resistance. Use tab key to navigate through individual cells and view details.">
-      <ResponsiveContainer width="100%" height="100%">
+      {/* Use an explicit pixel height to ensure Recharts can measure the container reliably */}
+      <ResponsiveContainer width="100%" height={300}>
         <ComposedChart 
           data={cells} 
           margin={{ top: 5, right: 20, left: -20, bottom: 20 }}
@@ -65,7 +70,7 @@ const CellVoltageChart: React.FC<CellVoltageChartProps> = ({ cells, onCellClick,
           />
           <Tooltip content={<CustomTooltip />} cursor={{fill: 'rgba(0, 242, 234, 0.1)'}} />
           <Legend verticalAlign="top" wrapperStyle={{paddingBottom: '10px'}} />
-          <Bar dataKey="voltage" yAxisId="left" name="Voltage">
+          <Bar dataKey="voltage" yAxisId="left" name="Voltage" barSize={10}>
             {cells.map((entry, index) => (
               <RechartsCell
                 key={`cell-${index}`}

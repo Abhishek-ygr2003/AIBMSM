@@ -1,8 +1,23 @@
 import http from 'http';
 import { URL } from 'url';
 
+// Load .env automatically for local development (if present)
+try {
+  // top-level await is supported in modern Node; import dotenv dynamically
+  const dotenv = await import('dotenv');
+  dotenv.config();
+  console.log('.env loaded');
+} catch (e) {
+  console.log('dotenv not loaded (running without .env)');
+}
+
 const PORT = process.env.PROXY_PORT || 3001;
-const GEMINI_URL = 'https://api.generativeai.googleapis.com/v1/models/gemini-2.5-flash:generateText';
+// Use the correct Gemini REST API endpoint
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const GEMINI_MODEL = 'gemini-2.5-pro';
+
+console.log(`Starting GenAI proxy on port ${PORT}`);
+console.log('GEMINI_API_KEY present?', !!GEMINI_API_KEY);
 
 const getRequestBody = (req) => new Promise((resolve, reject) => {
   let body = '';
@@ -29,24 +44,41 @@ const server = http.createServer(async (req, res) => {
       const bodyText = await getRequestBody(req);
       const bodyJson = bodyText ? JSON.parse(bodyText) : {};
 
-      const apiKey = process.env.GEMINI_API_KEY;
-      if (!apiKey) {
+      if (!GEMINI_API_KEY) {
         res.writeHead(500, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: 'Server not configured with GEMINI_API_KEY' }));
         return;
       }
 
-      // Forward request to Google GenAI REST endpoint
-      const fetchRes = await fetch(GEMINI_URL, {
+      // Build proper Gemini REST API request
+      const { prompt, systemInstruction } = bodyJson;
+      const geminiUrl = `https://generativelanguage.googleapis.com/v1/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
+      
+      // For v1 API, combine system instruction with the user prompt
+      const fullPrompt = systemInstruction 
+        ? `${systemInstruction}\n\n${prompt}`
+        : prompt;
+      
+      const requestBody = {
+        contents: [{ 
+          parts: [{ text: fullPrompt }] 
+        }]
+      };
+
+      console.log('Forwarding to Gemini:', geminiUrl.replace(GEMINI_API_KEY, '***'));
+
+      // Forward request to Google Gemini REST endpoint
+      const fetchRes = await fetch(geminiUrl, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify(bodyJson)
+        body: JSON.stringify(requestBody)
       });
 
       const json = await fetchRes.json();
+      console.log('Gemini response status:', fetchRes.status);
+      
       res.writeHead(fetchRes.status, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify(json));
     } catch (err) {

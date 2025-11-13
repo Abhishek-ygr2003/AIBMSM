@@ -37,36 +37,49 @@ const getFixSuggestion = async (cell: Cell, vehicleName: string): Promise<string
     Based on this data, provide a fault classification, list the likely causes, and recommend diagnostic/repair steps following the required format.
   `;
 
-  try {
-    // First try a local proxy (if running) to avoid CORS and expose API key server-side.
+  const makeApiCall = async (retries = 3): Promise<string> => {
     try {
-      const proxyRes = await fetch('/api/genai', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt, systemInstruction })
-      });
-      if (proxyRes.ok) {
-        const j = await proxyRes.json();
-        // Try common response shapes
-        if (j?.candidates?.length && j.candidates[0].content) return j.candidates[0].content;
-        if (j?.output) return JSON.stringify(j.output);
-        if (j?.text) return j.text;
-        return JSON.stringify(j);
+      // First try a local proxy (if running) to avoid CORS and expose API key server-side.
+      try {
+        const proxyRes = await fetch('/api/genai', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt, systemInstruction })
+        });
+        if (proxyRes.ok) {
+          const j = await proxyRes.json();
+          // Try common response shapes
+          if (j?.candidates?.length && j.candidates[0].content) return j.candidates[0].content;
+          if (j?.output) return JSON.stringify(j.output);
+          if (j?.text) return j.text;
+          return JSON.stringify(j);
+        }
+      } catch (proxyErr) {
+        // ignore proxy errors and fall back to client library
+        console.warn('Proxy call failed, falling back to client library:', proxyErr);
       }
-    } catch (proxyErr) {
-      // ignore proxy errors and fall back to client library
-      console.warn('Proxy call failed, falling back to client library:', proxyErr);
+
+      const response = await ai.models.generateContent({
+        model: "gemini-2.5-pro",
+        contents: prompt,
+        config: {
+          systemInstruction: systemInstruction,
+        },
+      });
+
+      return response.text ?? '';
+    } catch (error: any) {
+      if (error?.code === 503 && retries > 0) {
+        console.warn(`Gemini API overloaded, retrying... (${retries} attempts left)`);
+        await new Promise(resolve => setTimeout(resolve, 1000 * (4 - retries))); // exponential backoff
+        return makeApiCall(retries - 1);
+      }
+      throw error;
     }
+  };
 
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: prompt,
-      config: {
-        systemInstruction: systemInstruction,
-      },
-    });
-
-    return response.text ?? '';
+  try {
+    return await makeApiCall();
   } catch (error) {
     console.error("Gemini API call failed:", error);
     throw new Error("Failed to communicate with the AI assistant. Check your API key and network connection.");

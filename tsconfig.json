@@ -16,5 +16,5 @@
     "noFallthroughCasesInSwitch": true,
     "types": ["node"]
   },
-  "include": ["src", "components", "services", "utils", "index.tsx", "App.tsx", "types.ts"]
+  "include": ["src", "components", "services", "utils", "index.tsx", "App.tsx", "types.ts", "vite-env.d.ts"]
 }
