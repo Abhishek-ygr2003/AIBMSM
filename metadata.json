@@ -1,0 +1,5 @@
+{
+  "name": "EV Battery Diagnostics MVP",
+  "description": "A Minimum Viable Product for an AI-powered diagnostic platform for EV batteries in the Indian 2/3-wheeler market. This application provides real-time visualization of battery cell health and automatically flags anomalies.",
+  "requestFramePermissions": []
+}
