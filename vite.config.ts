@@ -12,21 +12,11 @@ export default defineConfig(({ mode }) => {
         host: '0.0.0.0',
         // Proxy API calls in dev to the local GenAI proxy (default port 3001 or override with PROXY_PORT)
         proxy: {
-          '/api': {
+          '/api/genai': {
             target: `http://localhost:${process.env.PROXY_PORT || 3001}`,
             changeOrigin: true,
             secure: false,
-            rewrite: (path) => path.replace(/^\/api/, '/api')
           }
-        }
-      },
-      // Proxy API calls to the local GenAI proxy during development to avoid CORS and
-      // to keep API keys server-side. This only applies to `npm run dev`.
-      proxy: {
-        '/api/genai': {
-          target: 'http://localhost:3001',
-          changeOrigin: true,
-          secure: false,
         }
       },
       plugins: [react()],
