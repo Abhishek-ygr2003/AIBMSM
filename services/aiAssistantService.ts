@@ -1,12 +1,19 @@
+
 import { GoogleGenAI } from "@google/genai";
 import { Cell } from '../types';
-
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+import { apiKeyService } from "./apiKeyService";
 
 const getFixSuggestion = async (cell: Cell, vehicleName: string): Promise<string> => {
   if (!cell.isAnomaly) {
     return "The selected cell is operating within normal parameters. No action is required.";
   }
+
+  const apiKey = apiKeyService.getApiKey();
+  if (!apiKey) {
+    throw new Error("Gemini API key not set. Please set it in the header.");
+  }
+  
+  const ai = new GoogleGenAI({ apiKey });
 
   const systemInstruction = "You are an expert AI assistant for EV battery technicians, specializing in the Indian 2/3-wheeler market. Provide concise, actionable advice for a skilled mechanic. Format your response using markdown. Your response MUST have three distinct sections in this order: 1. **Fault Classification**: (Your classification here), 2. **Likely Causes**: (Bulleted list), 3. **Recommended Steps**: (Bulleted list).";
   
@@ -33,7 +40,7 @@ const getFixSuggestion = async (cell: Cell, vehicleName: string): Promise<string
     return response.text;
   } catch (error) {
     console.error("Gemini API call failed:", error);
-    throw new Error("Failed to communicate with the AI assistant.");
+    throw new Error("Failed to communicate with the AI assistant. Check your API key and network connection.");
   }
 };
 

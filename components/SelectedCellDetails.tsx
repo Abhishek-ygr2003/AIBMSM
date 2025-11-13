@@ -31,7 +31,11 @@ const SelectedCellDetails: React.FC<SelectedCellDetailsProps> = ({ cell, onClose
       setAiSuggestion(suggestion);
     } catch (error) {
       console.error("AI Assistant Error:", error);
-      setAnalysisError("Failed to get suggestion. Please try again.");
+      if (error instanceof Error) {
+        setAnalysisError(error.message);
+      } else {
+        setAnalysisError("An unknown error occurred. Please try again.");
+      }
     } finally {
       setIsAnalyzing(false);
     }
@@ -100,7 +104,7 @@ const SelectedCellDetails: React.FC<SelectedCellDetailsProps> = ({ cell, onClose
             </div>
           )}
 
-          {analysisError && <p className="text-sm text-red-400">{analysisError}</p>}
+          {analysisError && <p className="text-sm text-red-400 text-center bg-red-900/50 p-2 rounded-md">{analysisError}</p>}
           
           {aiSuggestion && (
             <div className="text-sm text-gray-300 bg-black/50 p-3 rounded-md border border-gray-800">
